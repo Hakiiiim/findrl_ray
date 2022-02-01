@@ -26,7 +26,7 @@ if nav_page == "CostFactors":
     microbeads_ssa = st.select_slider('Beads Media SSA',[1280,1800,2500,3500])
     tank_depth = st.slider("Tank Culture Depth(m)",min_value=1.0,max_value=1.5, step=0.1, value=1.2)
     tank_diameter = st.slider("Tank Diameter",min_value=6.0,max_value=9.0,step=1.0, value=6.0)
-    tank_area = ((tank_diameter*0.5)^2)*pi()
+    tank_area = ((tank_diameter*0.5)^2)*3.1415
     tank_volume = tank_area*tank_depth
     static_o2_consumptions = st.slider()
 

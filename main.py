@@ -16,6 +16,9 @@ peak_biomass = st.sidebar.slider('Peak Biomass(kg/m3)')
 
 
 if nav_page == "Dashboard":
+    with open('config.json') as json_file:
+        data = json.load(json_file)
+    st.write('config file data',data)
     st.write('Selected MBBR Type', mbbr_type)
     st.write('Peak Biomass', peak_biomass,'kg/m3')
 
@@ -33,6 +36,6 @@ if nav_page == "CostFactors":
     config = json.dumps(nav_config)
     st.write('json test',config)
 
-    with open('json_data.json', 'w') as outfile:
+    with open('config.json', 'w') as outfile:
         json.dump(nav_config, outfile)
     

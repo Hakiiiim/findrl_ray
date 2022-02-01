@@ -5,7 +5,6 @@ import pandas as pd
 st.set_page_config(layout="wide")
 
 col1, col2, col3, col4 = st.columns([1.1,1,2.3,0.85])
-
 st.sidebar.title("Tilapia Culture Economics Prophet BI")
 #Sidebar Controls
 st.sidebar.markdown("# SiteSpecs")
@@ -15,15 +14,17 @@ mbbr_type = st.sidebar.selectbox('MBBR Type',('conventional','microbeads'))
 #Main Configs
 with col1:
     st.header('Configs')
-    with st.expander('HardwarConfigs',expanded=True):
+    with st.expander('HardwareConfigs',expanded=True):
         microbeads_ssa = st.select_slider('Beads Media SSA',[1280,1800,2500,3500])
         conventional_ssa = st.select_slider('Conventional K type filter SSA',[500,600,700,800,900,1000,1100,1200],value=800)
         tank_depth = st.slider("Tank Culture Depth(m)",min_value=1.0,max_value=1.5, step=0.1, value=1.2)
         tank_diameter = st.slider("Tank Diameter",min_value=6.0,max_value=9.0,step=1.0, value=6.0)
         static_o2_consumptions = st.slider('O2 Consumption(mg/hr) / kg biomass',min_value=200,max_value=800,step=50,value=550)
+        
     with st.expander('BioInputs',expanded=False):
         start_weight = st.number_input('Fingerling Weight(g)',value=5)
         harvest_weight = st.slider('Harvest Weight(g)',min_value=500,max_value=1200,step=50)
+        fcr = st.slider('FCR:',min_value=1.3,step=0.05,max_value=2.0,value=1.50)
     #Not expanded stage DOCs
     with st.expander('DOCs/Stage Inputs', expanded=False):
         stage_1_days = st.number_input('Stage 1 days:',value=60)
@@ -41,11 +42,25 @@ with col1:
     #Densities Per Stage   
     with st.expander('Densities Per Stage',expanded=False):
         stage_1_den = st.slider('Stage 1 Densities',min_value=500,max_value=1600,step=100,value=1000)
-        stage_2_den = st.slider('Stage 2 Densities',min_value=200,max_value=800,step=50,value=500)
-        stage_3_den = st.slider('Stage 3 Densities',min_value=80,max_value=400,step=25,value=150)
+        stage_2_den = st.slider('Stage 2 Densities',min_value=200,max_value=800,step=50,value=450)
+        stage_3_den = st.slider('Stage 3 Densities',min_value=80,max_value=400,step=25,value=125)
         stage_4_den = st.slider('Stage 4 Densities',min_value=50,max_value=250,step=25,value=100)
         stage_5_den = st.slider('Stage 5 Densities',min_value=20,max_value=150,step=10,value=60)
-    #Not expanded stage mortalitiess
+    #Feeding % each stage
+    with st.expander('每階段攝食率（百分比）',expanded=False):
+        stage_1_feed = st.slider('1階攝食率',min_value=5.0,max_value=10.0,step=0.5,value=6.00)
+        stage_2_feed = st.slider('2階攝食率',min_value=3.0,max_value=7.0,step=0.5,value=4.00)
+        stage_3_feed = st.slider('3階攝食率',min_value=2.0,max_value=3.0,step=0.5,value=1.50)
+        stage_4_feed = st.slider('4階攝食率',min_value=1.0,max_value=2.0,step=0.1,value=1.25)
+        stage_5_feed = st.slider('5階攝食率',min_value=1.0,max_value=2.0,step=0.1,value=1.00)
+     #Feeding % each stage
+    with st.expander('每階段餌料蛋白質）',expanded=False):
+        stage_1_feed_cp = st.slider('1階餌料蛋白質',min_value=28.0,max_value=35.0,step=1.0,value=35.0)
+        stage_2_feed_cp = st.slider('2階餌料蛋白質',min_value=25.0,max_value=35.0,step=1.0,value=28.0)
+        stage_3_feed_cp = st.slider('3階餌料蛋白質',min_value=20.0,max_value=32.0,step=0.5,value=25.0)
+        stage_4_feed_cp = st.slider('4階餌料蛋白質',min_value=20.0,max_value=28.0,step=0.1,value=25.0)
+        stage_5_feed_cp = st.slider('5階餌料蛋白質',min_value=20.0,max_value=28.0,step=0.1,value=25.0)
+    #Not expanded stage mortalities
     with st.expander('Mortalities Each Stage', expanded=False):
         stage_1_mort = st.number_input('Stage 1 Mortalities: (%)',value=3)
         stage_2_mort = st.number_input('Stage 2 Mortalities: (%)',value=2)
@@ -90,6 +105,11 @@ def stage_5_biomass():
     x = stage_5_den*stage_5_abw/1000
     return x
 
+def tank_1_volume():
+   x = round(((stage_5_den/stage_1_den) * total_water) / tank_volume_fn(),0)+1
+   return x
+
+
 with col2:
     st.header('KPIs')
     peak_biomass = st.sidebar.slider('Peak Biomass(kg/m3)')
@@ -119,11 +139,19 @@ with col3:
     st.write('test space')
 
 with col4:
-    st.header('Investment Remarks')
+    st.header('投資指標評估')
 
 
 with st.expander('Costs Input Variables',expanded=True):    
     tank_costs = st.slider("RAS Tank Costs(TWD/m3)", min_value=0, max_value=1000, value=600)
 
 st.empty()
-st.write('Further Remarks')
+con_col = st.columns([2,1,2])
+
+with con_col[0]:
+    st.header('每階段水池設計配比')
+    st.write('tank size')
+with con_col[1]:
+    st.header('Tank Sizes')
+with con_col[2]:
+    st.header('虛位以待')

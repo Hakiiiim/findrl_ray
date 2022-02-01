@@ -1,10 +1,7 @@
 from cmath import pi
-from re import L, X
-from sqlalchemy import true
 import streamlit as st
 import json
 import pandas as pd
-from sympy import expand 
 st.set_page_config(layout="wide")
 
 col1, col2, col3, col4 = st.columns([1.1,1,2.3,0.85])
@@ -78,7 +75,7 @@ def stage_5_adg():
     x =(harvest_weight-stage_4_abw)/stage_5_days
     return x
 def stage_1_biomass():
-    x = ((stage_1_den*stage_1_abw)/1000)
+    x = ((stage_1_den*stage_1_abw)/1000)*((100-stage_1_mort)/100)
     return x
 def stage_2_biomass():
     x = stage_2_den*stage_2_abw*(100-stage_2_mort)/1000

@@ -28,12 +28,8 @@ if nav_page == "CostFactors":
     microbeads_ssa = st.select_slider('Beads Media SSA',[1280,1800,2500,3500])
 
     nav_config = {
-        'HardwarePerformance' : [
             "microbeads_ssa": microbeads_ssa, 
-        ],
-        'HardwareInvestments': [
             "tank_costs": tank_costs,
-            ]
     }
 
     config = json.dumps(nav_config)

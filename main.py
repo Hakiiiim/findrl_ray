@@ -14,7 +14,7 @@ if nav_page == "Dashboard":
     with open('config.json') as json_file:
         config_data = json.load(json_file)
     st.write('config file data',config_data)
-    st.write('microbeads ssa',config_data['microbeads_ssa'])
+    st.write('microbeads ssa',config_data['tank_volume'])
     st.write('Selected MBBR Type', mbbr_type)
     st.write('Peak Biomass', peak_biomass,'kg/m3')
 

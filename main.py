@@ -19,3 +19,4 @@ if nav_page == "KPIs":
 
 if nav_page == "CostFactors":
     tank_costs = st.slider("RAS Tank Costs(TWD/m3)", min_value=0, max_value=1000, value=600)
+    microbeads_ssa = st.slider('')

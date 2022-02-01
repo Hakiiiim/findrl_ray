@@ -34,6 +34,5 @@ if nav_page == "CostFactors":
 
     config = json.dumps(nav_config)
     st.write('json test',config)
-    with open('json_data.json', 'w') as outfile:
-        json.dump(config, outfile)
+
     

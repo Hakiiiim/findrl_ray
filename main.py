@@ -31,8 +31,7 @@ if nav_page == "CostFactors":
             "microbeads_ssa": microbeads_ssa, 
             "tank_costs": tank_costs,
     }
-
-    config = json.dumps(nav_config)
-    st.write('json test',config)
+    #config = json.dumps(nav_config)
+    #st.write('json test',config)
 
     

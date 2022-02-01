@@ -32,7 +32,7 @@ if nav_page == "CostFactors":
     static_o2_consumptions = st.slider('O2 Consumption(mg/hr) / kg biomass',min_value=200,max_value=800,step=50,value=550)
 
 
-    nav_config = {
+    global nav_config = {
             "microbeads_ssa": microbeads_ssa, 
             "tank_costs": tank_costs,
             "tank_depth":tank_depth,
@@ -42,7 +42,8 @@ if nav_page == "CostFactors":
             "static_o2_consumptions":static_o2_consumptions,
 
     }
-
+    config = json.dumps(nav_config)
+    return config
     with open('config.json', 'w') as outfile:
         json.dump(nav_config, outfile)
     

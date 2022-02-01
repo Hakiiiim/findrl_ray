@@ -75,19 +75,19 @@ def stage_5_adg():
     x =(harvest_weight-stage_4_abw)/stage_5_days
     return x
 def stage_1_biomass():
-    x = ((stage_1_den*stage_1_abw)/1000)*((100-stage_1_mort)/100)
+    x = stage_1_den * (stage_1_abw/1000) 
     return x
 def stage_2_biomass():
-    x = stage_2_den*stage_2_abw*(100-stage_2_mort)/1000
+    x = stage_2_den*stage_2_abw/1000
     return x
 def stage_3_biomass():
-    x = stage_3_den*stage_3_abw*(100-stage_3_mort)/1000
+    x = stage_3_den*stage_3_abw/1000
     return x
-def stage_1_biomass():
-    x = stage_4_den*stage_4_abw*(100-stage_4_mort)/1000
+def stage_4_biomass():
+    x = stage_4_den*stage_4_abw/1000
     return x
-def stage_1_biomass():
-    x = stage_5_den*stage_5_abw*(100-stage_5_mort)/1000
+def stage_5_biomass():
+    x = stage_5_den*stage_5_abw/1000
     return x
 
 with col2:
@@ -103,7 +103,12 @@ with col2:
         st.write('Stage 4 ADG: {0: .3f}(g/day)'.format(stage_4_adg()))
         st.write('Stage 5 ADG: {0: .3f}(g/day)'.format(stage_5_adg()))
     with st.expander('Biomass Per Stage',expanded=False):
-        st.write('Stage 1 Peak Biomass: {0: .2f}(kg/m3)'.format(stage_1_biomass()))
+        st.write('Stage 1 Peak Biomass: {0: .3f}(kg/m3)'.format(stage_1_biomass()))
+        st.write('Stage 2 Peak Biomass: {0: .3f}(kg/m3)'.format(stage_2_biomass()))
+        st.write('Stage 3 Peak Biomass: {0: .3f}(kg/m3)'.format(stage_3_biomass()))
+        st.write('Stage 4 Peak Biomass: {0: .3f}(kg/m3)'.format(stage_4_biomass()))
+        st.write('Stage 5 Peak Biomass: {0: .3f}(kg/m3)'.format(stage_5_biomass()))
+
 
 
 

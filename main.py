@@ -24,11 +24,12 @@ if nav_page == "KPIs":
 if nav_page == "CostFactors":
     tank_costs = st.slider("RAS Tank Costs(TWD/m3)", min_value=0, max_value=1000, value=600)
     microbeads_ssa = st.select_slider('Beads Media SSA',[1280,1800,2500,3500])
+    conventional_ssa = st.select_slider('Conventional K type filter SSA',[500,600,700,800,900,1000,1100,1200],value=800)
     tank_depth = st.slider("Tank Culture Depth(m)",min_value=1.0,max_value=1.5, step=0.1, value=1.2)
     tank_diameter = st.slider("Tank Diameter",min_value=6.0,max_value=9.0,step=1.0, value=6.0)
-    tank_area = float(tank_diameter*0.5)*float(tank_diameter*0.5)*3.1415
-    tank_volume = tank_area*tank_depth
-    static_o2_consumptions = st.slider()
+    tank_area = st.write(float(tank_diameter*0.5)*float(tank_diameter*0.5)*3.1415)
+    tank_volume = st.write(tank_area*tank_depth)
+    static_o2_consumptions = st.slider('O2 Consumption(mg/hr) / kg biomass',min_value=200,max_value=800,step=50,value=550)
 
 
     nav_config = {

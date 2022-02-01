@@ -29,10 +29,10 @@ if nav_page == "CostFactors":
 
     nav_config = {
         'HardwarePerformance' : [
-            mb_ssa:microbeads_ssa,
+            'microbeads_ssa':microbeads_ssa,
         ],
         'HardwareInvestments': [
-            tankcosts:tank_costs
+            'tank_costs':tank_costs,
             ]
     }
 

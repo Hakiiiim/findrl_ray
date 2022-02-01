@@ -1,4 +1,3 @@
-from gevent import config
 import streamlit as st
 import json
 
@@ -29,9 +28,9 @@ if nav_page == "CostFactors":
 
     nav_config = {
             "microbeads_ssa": microbeads_ssa, 
-            "tank_costs": tank_costs,
+            "tank_costs": tank_costs
     }
-    #config = json.dumps(nav_config)
-    #st.write('json test',config)
+    config = json.dumps(nav_config)
+    st.write('json test',config)
 
     

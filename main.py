@@ -2,8 +2,9 @@ from cmath import pi
 import streamlit as st
 import json
 import pandas as pd
-
+import numpy as np
 st.set_page_config(layout="wide")
+
 
 col1, col2, col3, col4 = st.columns([1.1,1,2.3,0.85])
 st.sidebar.title("Tilapia Culture Economics Prophet BI")
@@ -13,6 +14,7 @@ total_water = st.sidebar.slider('Input Site Total m3',value=3000,min_value=500,m
 st.sidebar.markdown("# MBBR Type")
 mbbr_type = st.sidebar.selectbox('MBBR Type',('conventional','microbeads'))
 peak_biomass = st.sidebar.slider('Peak Biomass(kg/m3)',min_value=20,max_value=150,step=1,value=60)
+electricity_costs = st.sidebar.number_input('電費$/kWh',min_value=2.40,max_value=2.9,value=2.60)
 #Main Configs
 with col1:
     st.header('Configs')
@@ -74,12 +76,16 @@ with col1:
         stage_4_mort = st.number_input('Stage 4 Mortalities: (%)',value=1)
         stage_5_mort = st.number_input('Stage 5 Mortalities: (%)',value=1)
 
+daily_weight = [float(start_weight)]
 def tank_volume_fn():
     x = round(tank_depth *float(tank_diameter*0.5)*float(tank_diameter*0.5)*3.1415,3)
     return x
 def tank_number_fn():
     x = round(total_water/tank_volume_fn(),0)+1
     return x
+def total_doc():
+    x = stage_1_days + stage_2_days + stage_3_days + stage_4_days + stage_5_days
+    return x 
 def stage_1_adg():
     x =(stage_1_abw-start_weight)/stage_1_days
     return x
@@ -110,11 +116,9 @@ def stage_4_biomass():
 def stage_5_biomass():
     x = stage_5_den*stage_5_abw/1000
     return x
-
 def volume_coefficent():
     x = (stage_5_den/stage_1_den) + (stage_5_den/stage_2_den) + (stage_5_den/stage_3_den) + (stage_5_den/stage_4_den) + 1
     return x
-
 def tank_1_amount():
    x = round(((stage_5_den/stage_1_den) / volume_coefficent() * total_water) / tank_volume_fn(),0)+1
    return x
@@ -148,7 +152,6 @@ def tank_5_volume():
 def real_capacity():
     x = (tank_1_amount()+tank_2_amount()+tank_3_amount()+tank_4_amount()+tank_5_amount())*tank_volume_fn()
     return x
-
 def stage_1_tan():
     x = tank_1_volume() * stage_1_biomass() * stage_1_feed_cp/100 * 0.16 * 0.3 * 1.2 * stage_1_feedrat/100
     return x
@@ -174,22 +177,65 @@ def biofilter_volume():
     x = hypo_ssa()/microbeads_ssa
     return x 
 #Peak Aeration Design Spec   
-def stage_1_aerateamt():
-    x = stage_1_biomass() * static_o2_consumptions/1000/1.429/0.1 #lpm air/h
+def stage_1_recir_m3():
+    x = tank_1_volume() * stage_1_biomass() / (static_o2_consumptions/(do_back-do_return)) # g/hr entire stage
     return x
+
+
 def stage_1_sumdays_biomass():
-    data = []
+    data = [float(start_weight)]
     sum = 0 
-    for i in range(stage_1_days):
-        x = float(start_weight) + stage_1_adg
+    for i in range(int(stage_1_days)):
+        x = data[i] + stage_1_adg()
         data.append(x)
+        daily_weight.append(x)
     for y in range(len(data)):
-        sum = sum + y
-    return y 
-        
-    
-
-
+        sum = sum + data[y]
+    return sum
+def stage_2_sumdays_biomass():
+    data = [float(stage_1_abw)]
+    sum = 0 
+    for i in range(int(stage_2_days)):
+        x = data[i] + stage_2_adg()
+        data.append(x)
+        daily_weight.append(x)
+    for y in range(len(data)):
+        sum = sum + data[y]
+    return sum        
+def stage_3_sumdays_biomass():
+    data = [float(stage_2_abw)]
+    sum = 0 
+    for i in range(int(stage_3_days)):
+        x = data[i] + stage_3_adg()
+        data.append(x)
+        daily_weight.append(x)
+    for y in range(len(data)):
+        sum = sum + data[y]
+    return sum
+def stage_4_sumdays_biomass():
+    data = [float(stage_3_abw)]
+    sum = 0 
+    for i in range(int(stage_4_days)):
+        x = data[i] + stage_4_adg()
+        data.append(x)
+        daily_weight.append(x)
+    for y in range(len(data)):
+        sum = sum + data[y]
+    return sum 
+def stage_5_sumdays_biomass():
+    data = [float(stage_4_abw)]
+    sum = 0 
+    for i in range(int(stage_5_days)):
+        x = data[i] + stage_5_adg()
+        data.append(x)
+        daily_weight.append(x)
+    for y in range(len(data)):
+        sum = sum + data[y]
+    return sum   
+def full_cycle_enegy_weight():
+    x = stage_1_sumdays_biomass() + stage_2_sumdays_biomass() + stage_3_sumdays_biomass() + stage_4_sumdays_biomass() + stage_5_sumdays_biomass()
+    x = (x/total_doc())/5
+    return x
 
 with col2:
     st.header('KPIs')
@@ -211,18 +257,25 @@ with col2:
     totaltan = st.write('Total TAN: kg/day',total_tan())
     hypothetical_ssa = st.write('理論需求表面積(m2)',hypo_ssa())
     microbeadsamount = st.write('保麗龍球體積:(m3)',biofilter_volume())
-    with st.expander('Aerations & Minimum Water Recirculations',expanded=False):
-        st.write('stg1 re-times',stage_1_aerateamt())
-        st.write('stage 1 biomass',stage_1_sumdays_biomass())
-
-
-
+    with st.expander('每階段峰值生物密度',expanded=False):
+        st.write('stage 1 biomass kg/d throughout stage',round(stage_1_sumdays_biomass(),2))
+        st.write('stage 2 biomass kg/d throughout stage',round(stage_2_sumdays_biomass(),2))
+        st.write('stage 3 biomass kg/d throughout stage',round(stage_3_sumdays_biomass(),2))
+        st.write('stage 4 biomass kg/d throughout stage',round(stage_4_sumdays_biomass(),2))
+        st.write('stage 5 biomass kg/d throughout stage',round(stage_5_sumdays_biomass(),2))
+    Weighted_daily_m3_biomass = st.write('Weighted Biomass(m3/d)', full_cycle_enegy_weight())
+    with st.expander('每階段循環 t/h',expanded=False):
+        st.write('1階小時循環量',stage_1_recir_m3()) 
 
 
 with col3:
     st.header('Charts Tables')
-    st.write('test space')
-
+    chart_data = daily_weight[:total_doc()+1]
+    doc_growth_curve = pd.DataFrame(chart_data,columns=['日重量'])
+    doc_growth_curve['日耗氧'] = (doc_growth_curve['日重量']/1000) * ((static_o2_consumptions/1000)*24) / (stage_5_abw/1000)
+    with st.expander('DOC增長曲線', expanded=False):
+        st.line_chart(doc_growth_curve)
+    st.write('每只生命週期耗氧(g/cycle/pcs)',doc_growth_curve['日耗氧'].sum())
 with col4:
     st.header('Costs Input Variables')
     with st.expander('HardwareInvestments',expanded=True):
@@ -232,8 +285,9 @@ with col4:
 st.empty()
 with st.container():
     st.header('投資指標評估') 
-st.expander('投資指標評估',expanded=True)
-tank_invest = st.write('槽體工程投資金額:',round(tank_costs*real_capacity(),0))
+    st.expander('投資指標評估',expanded=True)
+    tank_invest = st.write('槽體工程投資金額:',round(tank_costs*real_capacity(),0))
+    o2_costs = st.write('Oxygenation Costs($/kg)',round(electricity_costs*doc_growth_curve['日耗氧'].sum()/1.30/1000),3)
 
 
 con_col = st.columns([2,1,2])

@@ -2,6 +2,7 @@ from cmath import pi
 import streamlit as st
 import json
 import pandas as pd
+
 st.set_page_config(layout="wide")
 
 col1, col2, col3, col4 = st.columns([1.1,1,2.3,0.85])
@@ -11,6 +12,7 @@ st.sidebar.markdown("# SiteSpecs")
 total_water = st.sidebar.slider('Input Site Total m3',value=3000,min_value=500,max_value=6000,step=100)
 st.sidebar.markdown("# MBBR Type")
 mbbr_type = st.sidebar.selectbox('MBBR Type',('conventional','microbeads'))
+peak_biomass = st.sidebar.slider('Peak Biomass(kg/m3)',min_value=20,max_value=150,step=1,value=60)
 #Main Configs
 with col1:
     st.header('Configs')
@@ -20,10 +22,12 @@ with col1:
         tank_depth = st.slider("Tank Culture Depth(m)",min_value=1.0,max_value=1.5, step=0.1, value=1.2)
         tank_diameter = st.slider("Tank Diameter",min_value=6.0,max_value=9.0,step=1.0, value=6.0)
         static_o2_consumptions = st.slider('O2 Consumption(mg/hr) / kg biomass',min_value=200,max_value=800,step=50,value=550)
-        tan_removal_rate = st.slider('TAN Removal Rate:',min_value=0.1,max_value=0.5,value=0.25)   
+        tan_removal_rate = st.slider('TAN Removal Rate:',min_value=0.1,max_value=0.5,value=0.25) 
+        do_return =st.slider('DO Minimum',min_value=4.0,max_value=5.0,step=0.1,value=4.0)
+        do_back = st.slider('DO Return',min_value=6.5,max_value=25.0,value=7.5)
     with st.expander('BioInputs',expanded=False):
         start_weight = st.number_input('Fingerling Weight(g)',value=5)
-        harvest_weight = st.slider('Harvest Weight(g)',min_value=500,max_value=1200,step=50)
+        harvest_weight = st.slider('Harvest Weight(g)',min_value=500,max_value=1200,step=50,value=1000)
         fcr = st.slider('FCR:',min_value=1.3,step=0.05,max_value=2.0,value=1.50)
 
 
@@ -47,7 +51,7 @@ with col1:
         stage_2_den = st.slider('Stage 2 Densities',min_value=200,max_value=800,step=50,value=450)
         stage_3_den = st.slider('Stage 3 Densities',min_value=80,max_value=400,step=25,value=125)
         stage_4_den = st.slider('Stage 4 Densities',min_value=50,max_value=250,step=25,value=100)
-        stage_5_den = st.slider('Stage 5 Densities',min_value=20,max_value=150,step=10,value=60)
+        stage_5_den = st.slider('Stage 5 Densities',min_value=20,max_value=150,step=10,value=int(peak_biomass*1000/stage_5_abw))
     #Feeding % each stage
     with st.expander('每階段攝食率（百分比）',expanded=False):
         stage_1_feedrat = st.slider('1階攝食率',min_value=5.0,max_value=10.0,step=0.5,value=6.00)
@@ -169,11 +173,26 @@ def hypo_ssa():
 def biofilter_volume():
     x = hypo_ssa()/microbeads_ssa
     return x 
+#Peak Aeration Design Spec   
+def stage_1_aerateamt():
+    x = stage_1_biomass() * static_o2_consumptions/1000/1.429/0.1 #lpm air/h
+    return x
+def stage_1_sumdays_biomass():
+    data = []
+    sum = 0 
+    for i in range(stage_1_days):
+        x = float(start_weight) + stage_1_adg
+        data.append(x)
+    for y in range(len(data)):
+        sum = sum + y
+    return y 
+        
+    
+
 
 
 with col2:
     st.header('KPIs')
-    peak_biomass = st.sidebar.slider('Peak Biomass(kg/m3)')
     tank_area = st.write('Tank Area Footprint:',round(float(tank_diameter*0.5)*float(tank_diameter*0.5)*3.1415,3))
     tank_volume = st.write('Tank Volume(m3)',tank_volume_fn())
     tank_number = st.write('Number of Tanks:',tank_number_fn())
@@ -191,7 +210,10 @@ with col2:
         st.write('Stage 5 Peak Biomass: {0: .3f}(kg/m3)'.format(stage_5_biomass()))
     totaltan = st.write('Total TAN: kg/day',total_tan())
     hypothetical_ssa = st.write('理論需求表面積(m2)',hypo_ssa())
-    microbeadsamount = st.write('保麗龍球體積:(m3)',biofilter_volume())  
+    microbeadsamount = st.write('保麗龍球體積:(m3)',biofilter_volume())
+    with st.expander('Aerations & Minimum Water Recirculations',expanded=False):
+        st.write('stg1 re-times',stage_1_aerateamt())
+        st.write('stage 1 biomass',stage_1_sumdays_biomass())
 
 
 

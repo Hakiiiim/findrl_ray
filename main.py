@@ -180,6 +180,18 @@ def biofilter_volume():
 def stage_1_recir_m3():
     x = tank_1_volume() * stage_1_biomass() / (static_o2_consumptions/(do_back-do_return)) # g/hr entire stage
     return x
+def stage_2_recir_m3():
+    x = tank_2_volume() * stage_2_biomass() / (static_o2_consumptions/(do_back-do_return)) # g/hr entire stage
+    return x
+def stage_3_recir_m3():
+    x = tank_3_volume() * stage_3_biomass() / (static_o2_consumptions/(do_back-do_return)) # g/hr entire stage
+    return x
+def stage_4_recir_m3():
+    x = tank_4_volume() * stage_4_biomass() / (static_o2_consumptions/(do_back-do_return)) # g/hr entire stage
+    return x
+def stage_5_recir_m3():
+    x = tank_5_volume() * stage_5_biomass() / (static_o2_consumptions/(do_back-do_return)) # g/hr entire stage
+    return x
 
 
 def stage_1_sumdays_biomass():
@@ -257,7 +269,7 @@ with col2:
     totaltan = st.write('Total TAN: kg/day',total_tan())
     hypothetical_ssa = st.write('理論需求表面積(m2)',hypo_ssa())
     microbeadsamount = st.write('保麗龍球體積:(m3)',biofilter_volume())
-    with st.expander('每階段峰值生物密度',expanded=False):
+    with st.expander('每階段峰值生物密度    ',expanded=False):
         st.write('stage 1 biomass kg/d throughout stage',round(stage_1_sumdays_biomass(),2))
         st.write('stage 2 biomass kg/d throughout stage',round(stage_2_sumdays_biomass(),2))
         st.write('stage 3 biomass kg/d throughout stage',round(stage_3_sumdays_biomass(),2))
@@ -265,7 +277,11 @@ with col2:
         st.write('stage 5 biomass kg/d throughout stage',round(stage_5_sumdays_biomass(),2))
     Weighted_daily_m3_biomass = st.write('Weighted Biomass(m3/d)', full_cycle_enegy_weight())
     with st.expander('每階段循環 t/h',expanded=False):
-        st.write('1階小時循環量',stage_1_recir_m3()) 
+        st.write('1階小時循環量',stage_1_recir_m3())
+        st.write('2階小時循環量',stage_2_recir_m3()) 
+        st.write('3階小時循環量',stage_3_recir_m3()) 
+        st.write('4階小時循環量',stage_4_recir_m3()) 
+        st.write('5階小時循環量',stage_5_recir_m3()) 
 
 
 with col3:

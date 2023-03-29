@@ -8,7 +8,7 @@ from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
 #from finrl.meta.data_processor import DataProcessor
 
 # load the DataFrame from a pickle file
-df = pd.read_pickle('./dataset/processed.pkl')
+df = pd.read_pickle('/home/ray/findrl_ray/dataset/processed.pkl')
 TRAIN_START_DATE = '2010-01-01'
 TRAIN_END_DATE = '2021-01-01'
 TRADE_START_DATE = '2021-01-02'

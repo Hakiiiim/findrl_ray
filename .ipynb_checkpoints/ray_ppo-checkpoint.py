@@ -5,7 +5,7 @@ import pandas as pd
 import pickle 
 from finrl.meta.preprocessor.preprocessors import FeatureEngineer, data_split
 from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
-from finrl.meta.data_processor import DataProcessor
+#from finrl.meta.data_processor import DataProcessor
 
 # load the DataFrame from a pickle file
 df = pd.read_pickle('dataset/processed.pkl')

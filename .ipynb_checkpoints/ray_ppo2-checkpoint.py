@@ -91,7 +91,7 @@ print(f"ray is being initialized")
 config = ppo.PPOConfig()  
 config = config.training(gamma=0.9, lr=0.001, kl_coeff=0.3)  
 config = config.resources(num_gpus=0)  
-config = config.rollouts(num_rollout_workers=1)
+config = config.rollouts(num_rollout_workers=5)
 
 # registering the environment to ray
 register_env("finrl", env_creator)
@@ -102,15 +102,16 @@ else:
     trainer = config.build(env="finrl") 
     
 # Train away -------------------------------------------------------------
-total_episodes=100
+total_episodes=1000
 agent_name = 'ppo'
 ep = 0
 results = []
 while ep <= total_episodes:
     results.append(trainer.train())
     ep += 1
+    print('current episode',ep)
     if ep % 10 == 0:
         cwd_checkpoint = "results/checkpoints/" + str(agent_name) + '_' + str(ep)
         trainer.save(cwd_checkpoint)
         print(f"Checkpoint saved in directory {cwd_checkpoint}")
-        print('current epoch',ep)
+        

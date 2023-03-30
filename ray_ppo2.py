@@ -35,7 +35,7 @@ buy_cost_list = sell_cost_list = [0.001] * stock_dimension
 num_stock_shares = [0] * stock_dimension
 
 env_kwargs = {
-    "hmax": 200,
+    "hmax": 10000,
     "initial_amount": 1000000,
     "num_stock_shares": num_stock_shares,
     "buy_cost_pct": buy_cost_list,
@@ -56,7 +56,7 @@ from gymnasium.wrappers import EnvCompatibility
 def env_creator(env_config):
     # env_config is passed as {} and defaults are set here
     df = env_config.get('df', train)
-    hmax = env_config.get('hmax', 200)
+    hmax = env_config.get('hmax', 10000)
     initial_amount = env_config.get('initial_amount', 1000000)
     num_stock_shares = env_config.get('num_stock_shares', [0] * stock_dimension)
     buy_cost_pct = env_config.get('buy_cost_pct', buy_cost_list)
@@ -89,9 +89,9 @@ print(f"ray is being initialized")
 # ray.init()
 
 config = ppo.PPOConfig()  
-config = config.training(gamma=0.9, lr=0.001, kl_coeff=0.3)  
+config = config.training(gamma=0.9, lr=0.00025, kl_coeff=0.3)  
 config = config.resources(num_gpus=0)  
-config = config.rollouts(num_rollout_workers=32)
+config = config.rollouts(num_rollout_workers=18)
 
 # registering the environment to ray
 register_env("finrl", env_creator)

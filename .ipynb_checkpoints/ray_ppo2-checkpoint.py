@@ -118,4 +118,4 @@ while ep <= total_episodes:
         print(f"Checkpoint saved in directory {cwd_checkpoint}")
         
         
-print(f'Complete training job took{time.time()-job_time:.2f}s'
+print(f'Complete training job took{time.time()-job_time:.2f}s')

@@ -101,7 +101,7 @@ else:
     #trainer = ppo.PPOTrainer(env='finrl', config=config)
     trainer = config.build(env="finrl") 
     
-# Train away -------------------------------------------------------------
+# Train away ------------------------------------------------------------- # 
 total_episodes=100
 agent_name = 'ppo'
 ep = 0

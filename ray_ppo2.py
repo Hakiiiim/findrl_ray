@@ -116,7 +116,7 @@ while ep <= total_episodes:
     results.append(trainer.train())
     ep += 1
      print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
-    if ep % 10 == 0:
+    if ep % 100 == 0:
         cwd_checkpoint = f"results/{agent_name}_{date}_{ep}"
         trainer.save(cwd_checkpoint)
         print(f"Checkpoint saved in directory {cwd_checkpoint}")

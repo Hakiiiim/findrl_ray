@@ -106,14 +106,16 @@ total_episodes=1000
 agent_name = 'ppo'
 ep = 0
 results = []
+job_time = time.time()
 while ep <= total_episodes:
     start = time.time()
     results.append(trainer.train())
     ep += 1
-     print(f'Current episode{ep},Time this iterations:{time.time()-start}s')
+     print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
     if ep % 10 == 0:
         cwd_checkpoint = "results/checkpoints/" + str(agent_name) + '_' + str(ep)
         trainer.save(cwd_checkpoint)
         print(f"Checkpoint saved in directory {cwd_checkpoint}")
         
         
+print(f'Complete training job took{time.time()-job_time:.2f}s'

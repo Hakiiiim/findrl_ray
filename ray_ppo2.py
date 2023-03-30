@@ -1,13 +1,13 @@
 ## Trainer Srcipt for Ray Cluster 
 ## Version 0.1 
-
+import time
 import pandas as pd
 import pickle 
 from finrl.meta.preprocessor.preprocessors import FeatureEngineer, data_split
 from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
 #from finrl.meta.data_processor import DataProcessor
 
-# load the DataFrame from a pickle file
+# load the DataFrame from a pickle file, point to home of clutser container. 
 df = pd.read_pickle('/home/ray/findrl_ray/dataset/processed.pkl')
 TRAIN_START_DATE = '2010-01-01'
 TRAIN_END_DATE = '2021-01-01'
@@ -107,11 +107,13 @@ agent_name = 'ppo'
 ep = 0
 results = []
 while ep <= total_episodes:
+    start = time.time()
     results.append(trainer.train())
     ep += 1
-    print('current episode',ep)
+     print(f'Current episode{ep},Time this iterations:{time.time()-start}s')
     if ep % 10 == 0:
         cwd_checkpoint = "results/checkpoints/" + str(agent_name) + '_' + str(ep)
         trainer.save(cwd_checkpoint)
         print(f"Checkpoint saved in directory {cwd_checkpoint}")
+        
         

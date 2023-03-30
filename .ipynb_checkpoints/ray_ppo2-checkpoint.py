@@ -1,6 +1,8 @@
 ## Trainer Srcipt for Ray Cluster 
 ## Version 0.1 
 import time
+from datetime import datetime
+# Get the current date as a string in the format YYMMDD
 import pandas as pd
 import pickle 
 from finrl.meta.preprocessor.preprocessors import FeatureEngineer, data_split
@@ -107,13 +109,15 @@ agent_name = 'ppo'
 ep = 0
 results = []
 job_time = time.time()
+date = datetime.now().strftime('%y%m%d')
+
 while ep <= total_episodes:
     start = time.time()
     results.append(trainer.train())
     ep += 1
      print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
     if ep % 10 == 0:
-        cwd_checkpoint = "results/checkpoints/" + str(agent_name) + '_' + str(ep)
+        cwd_checkpoint = f"results/{agent_name}_{date}_{ep}"
         trainer.save(cwd_checkpoint)
         print(f"Checkpoint saved in directory {cwd_checkpoint}")
         

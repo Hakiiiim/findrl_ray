@@ -18,5 +18,10 @@ pip install setuptools==65.5.0
 # install gymnasium
 pip install gymnasium
 
+<<<<<<< Updated upstream
 #export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 #pip install numpy==1.21
+=======
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+pip install numpy==1.21
+>>>>>>> Stashed changes

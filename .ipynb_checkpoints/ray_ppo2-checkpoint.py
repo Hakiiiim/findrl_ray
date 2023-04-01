@@ -115,6 +115,8 @@ while ep <= total_episodes:
     start = time.time()
     results.append(trainer.train())
     ep += 1
+    rwd = results[-1]['episode_reward_mean']
+    print(f'Mean Rwd:{rwd}')
      print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
     if ep % 100 == 0:
         cwd_checkpoint = f"results/{agent_name}_{date}_{ep}"

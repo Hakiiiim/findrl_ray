@@ -22,10 +22,12 @@ from gymnasium.wrappers import EnvCompatibility
 from ray.rllib.agents import ppo
 
 #Parser for num_workers variable in training jobs## 
-parser = argparse.ArgumentParser(description="num_workers")
+parser = argparse.ArgumentParser(description="num_workers & Episodes ")
 parser.add_argument('--workers',type=int,help='num_workers')
+parser.add_argument('--ep',type=int,help='episodes')
 args = parser.parse_args()
 num_workers = args.workers
+ep_total = args.ep
                     
 print('args loaded',num_workers)
 
@@ -75,6 +77,11 @@ config = ppo.PPOConfig()
 config = config.training(gamma=0.9, lr=0.00025, kl_coeff=0.3)  
 config = config.resources(num_gpus=0)  
 config = config.rollouts(num_rollout_workers=num_workers)
+config = config.framework(framework="torch")
+config['seed'] = 42
+config["model"]["fcnet_hiddens"] = [256, 256, 256, 32]
+config['train_batch_size'] = 10240
+
 
 # registering the environment to ray
 register_env("finrl", env_creator)
@@ -82,7 +89,7 @@ register_env("finrl", env_creator)
 trainer = config.build(env="finrl") 
     
 # Train away -------------------------------------------------------------
-total_episodes=1000
+total_episodes = ep_total 
 agent_name = 'ppo'
 ep = 0
 results = []

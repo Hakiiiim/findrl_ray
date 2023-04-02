@@ -2,25 +2,33 @@
 ## Version 0.1 
 import time
 from datetime import datetime
+# Get the current date as a string in the format YYMMDD
 import pandas as pd
 import pickle 
-import sys
+from finrl.meta.preprocessor.preprocessors import FeatureEngineer, data_split
+from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
+#from finrl.meta.data_processor import DataProcessor
 
-
-
-sys.path.append("./findrl_ray/finenv")
-from finenv.env_stocktrading import StockTradingEnv
 # load the DataFrame from a pickle file, point to home of clutser container. 
-train = pd.read_csv('./findrl_ray/dataset/train_data.csv')
-train = train.set_index(train.columns[0])
-train.index.names = ['']
-
+df = pd.read_pickle('/home/ray/findrl_ray/dataset/processed.pkl')
 TRAIN_START_DATE = '2010-01-01'
 TRAIN_END_DATE = '2021-01-01'
 TRADE_START_DATE = '2021-01-02'
 TRADE_END_DATE = '2023-03-26'
-INDICATORS = ['macd','boll_ub','boll_lb','rsi_30','cci_30','dx_30','close_30_sma','close_60_sma']
 
+INDICATORS = ['macd','rsi_14', 'rsi_21','rsi_28',
+ 'boll_ub',
+ 'boll_lb',
+ 'rsi_30',
+ 'cci_30',
+ 'dx_30',
+ 'close_30_sma',
+ 'close_60_sma']
+
+train = data_split(df, TRAIN_START_DATE,TRAIN_END_DATE)
+trade = data_split(df, TRADE_START_DATE,TRADE_END_DATE)
+print(len(train))
+print(len(trade))
 stock_dimension = len(train.tic.unique())
 state_space = 1 + 2*stock_dimension + len(INDICATORS)*stock_dimension
 print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
@@ -74,20 +82,26 @@ def env_creator(env_config):
         action_space=action_space,
         reward_scaling=reward_scaling
     ))
+
+use_ddppo = False
 from ray.rllib.agents import ppo
 ray.shutdown()
 print(f"ray is being initialized")
+# ray.init(_temp_dir="FinRL/RLLIB/results", num_cpus=1, num_gpus=0)
+# ray.init()
 
 config = ppo.PPOConfig()  
 config = config.training(gamma=0.9, lr=0.00025, kl_coeff=0.3)  
 config = config.resources(num_gpus=0)  
-config = config.rollouts(num_rollout_workers=5)
-config = config.framework(framework="torch")
-config["model"]["fcnet_hiddens"] = [1024, 256, 128, 32]
+config = config.rollouts(num_rollout_workers=18)
 
 # registering the environment to ray
 register_env("finrl", env_creator)
-trainer = config.build(env="finrl") 
+if use_ddppo:
+    trainer = ppo.DDPPOTrainer(env='finrl', config=config)
+else:
+    #trainer = ppo.PPOTrainer(env='finrl', config=config)
+    trainer = config.build(env="finrl") 
     
 # Train away -------------------------------------------------------------
 total_episodes=1000
@@ -101,10 +115,13 @@ while ep <= total_episodes:
     start = time.time()
     results.append(trainer.train())
     ep += 1
-    print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
+    rwd = results[-1]['episode_reward_mean']
+    print(f'Mean Rwd:{rwd}')
+     print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
     if ep % 100 == 0:
-        cwd_checkpoint = "model/" + str('4fcnet')
+        cwd_checkpoint = f"results/{agent_name}_{date}_{ep}"
         trainer.save(cwd_checkpoint)
         print(f"Checkpoint saved in directory {cwd_checkpoint}")
+        
         
 print(f'Complete training job took{time.time()-job_time:.2f}s')

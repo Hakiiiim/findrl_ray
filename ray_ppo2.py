@@ -5,43 +5,47 @@ from datetime import datetime
 import pandas as pd
 import pickle 
 import sys
-sys.path.append("./findrl_ray/finenv")
-sys.path.append("./FinRL")
-import finrl
-from finenv.env_stocktrading import StockTradingEnv
-from finenv.preprocessors import data_split
 
-import argparse
+
+
+sys.path.append("./findrl_ray/finenv")
+from finenv.env_stocktrading import StockTradingEnv
+# load the DataFrame from a pickle file, point to home of clutser container. 
+train = pd.read_csv('./findrl_ray/dataset/train_data.csv')
+train = train.set_index(train.columns[0])
+train.index.names = ['']
+
+TRAIN_START_DATE = '2010-01-01'
+TRAIN_END_DATE = '2021-01-01'
+TRADE_START_DATE = '2021-01-02'
+TRADE_END_DATE = '2023-03-26'
+INDICATORS = ['macd','boll_ub','boll_lb','rsi_30','cci_30','dx_30','close_30_sma','close_60_sma']
+
+stock_dimension = len(train.tic.unique())
+state_space = 1 + 2*stock_dimension + len(INDICATORS)*stock_dimension
+print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
+
+buy_cost_list = sell_cost_list = [0.001] * stock_dimension
+num_stock_shares = [0] * stock_dimension
+
+env_kwargs = {
+    "hmax": 10000,
+    "initial_amount": 1000000,
+    "num_stock_shares": num_stock_shares,
+    "buy_cost_pct": buy_cost_list,
+    "sell_cost_pct": sell_cost_list,
+    "state_space": state_space,
+    "stock_dim": stock_dimension,
+    "tech_indicator_list": INDICATORS,
+    "action_space": stock_dimension,
+    "reward_scaling": 1e-4
+}
 
 import psutil
 import ray
 ray._private.utils.get_system_memory = lambda: psutil.virtual_memory().total
 from ray.tune.registry import register_env
 from gymnasium.wrappers import EnvCompatibility
-
-from ray.rllib.agents import ppo
-
-#Parser for num_workers variable in training jobs## 
-parser = argparse.ArgumentParser(description="num_workers")
-parser.add_argument('--workers',type=int,help='num_workers')
-args = parser.parse_args()
-num_workers = args.workers
-                    
-print('args loaded',num_workers)
-
-#from finrl.meta.data_processor import DataProcessor
-
-# load the DataFrame from a pickle file, point to home of clutser container. 
-train = pd.read_csv('dataset/train_data.csv')
-train = train.set_index(train.columns[0])
-train.index.names = ['']
-
-INDICATORS = ['macd','boll_ub','boll_lb','rsi_30','cci_30','dx_30','close_30_sma','close_60_sma']
-
-stock_dimension = len(train.tic.unique())
-state_space = 1 + 2*stock_dimension + len(INDICATORS)*stock_dimension
-buy_cost_list = sell_cost_list = [0.001] * stock_dimension
-num_stock_shares = [0] * stock_dimension
 
 def env_creator(env_config):
     # env_config is passed as {} and defaults are set here
@@ -56,6 +60,7 @@ def env_creator(env_config):
     tech_indicator_list = env_config.get('tech_indicator_list', INDICATORS)
     action_space = env_config.get('action_space', stock_dimension)
     reward_scaling = env_config.get('reward_scaling', 1e-3)
+
     return EnvCompatibility(StockTradingEnv(
         df=df,
         hmax=hmax,
@@ -69,16 +74,19 @@ def env_creator(env_config):
         action_space=action_space,
         reward_scaling=reward_scaling
     ))
+from ray.rllib.agents import ppo
 ray.shutdown()
 print(f"ray is being initialized")
+
 config = ppo.PPOConfig()  
 config = config.training(gamma=0.9, lr=0.00025, kl_coeff=0.3)  
 config = config.resources(num_gpus=0)  
-config = config.rollouts(num_rollout_workers=num_workers)
+config = config.rollouts(num_rollout_workers=5)
+config = config.framework(framework="torch")
+config["model"]["fcnet_hiddens"] = [1024, 256, 128, 32]
 
 # registering the environment to ray
 register_env("finrl", env_creator)
-#trainer = ppo.PPOTrainer(env='finrl', config=config)
 trainer = config.build(env="finrl") 
     
 # Train away -------------------------------------------------------------
@@ -93,12 +101,9 @@ while ep <= total_episodes:
     start = time.time()
     results.append(trainer.train())
     ep += 1
-    if ep % 5 == 0:
-        rwd = results[-1]['episode_reward_mean']
-        print(f'Mean Rwd:{rwd}')   
     print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
     if ep % 100 == 0:
-        cwd_checkpoint = f"results/{agent_name}_{date}_{ep}"
+        cwd_checkpoint = "model/" + str('4fcnet')
         trainer.save(cwd_checkpoint)
         print(f"Checkpoint saved in directory {cwd_checkpoint}")
         

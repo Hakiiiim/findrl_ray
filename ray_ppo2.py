@@ -25,9 +25,11 @@ from ray.rllib.agents import ppo
 parser = argparse.ArgumentParser(description="num_workers & Episodes ")
 parser.add_argument('--workers',type=int,help='num_workers')
 parser.add_argument('--ep',type=int,help='episodes')
+parser.add_argument('--gpus',type=int,help='num_gpus')
 args = parser.parse_args()
 num_workers = args.workers
 ep_total = args.ep
+gpus = args.gpus
                     
 print('args loaded',num_workers)
 
@@ -74,8 +76,8 @@ def env_creator(env_config):
 ray.shutdown()
 print(f"ray is being initialized")
 config = ppo.PPOConfig()  
-config = config.training(gamma=0.9, lr=0.001, kl_coeff=0.3)  
-config = config.resources(num_gpus=0)  
+config = config.training(gamma=0.9, lr=0.0025, kl_coeff=0.3)  
+config = config.resources(num_gpus=gpus)  
 config = config.rollouts(num_rollout_workers=num_workers)
 config = config.framework(framework="torch")
 config['seed'] = 42

@@ -25,11 +25,9 @@ from ray.rllib.agents import ppo
 parser = argparse.ArgumentParser(description="num_workers & Episodes ")
 parser.add_argument('--workers',type=int,help='num_workers')
 parser.add_argument('--ep',type=int,help='episodes')
-parser.add_argument('--gpus',type=int,help='num_gpus')
 args = parser.parse_args()
 num_workers = args.workers
 ep_total = args.ep
-gpus = args.gpus
                     
 print('args loaded',num_workers)
 
@@ -76,13 +74,14 @@ def env_creator(env_config):
 ray.shutdown()
 print(f"ray is being initialized")
 config = ppo.PPOConfig()  
-config = config.training(gamma=0.9, lr=0.0025, kl_coeff=0.3)  
-config = config.resources(num_gpus=gpus)  
+config = config.training(gamma=0.9, lr=0.00025, kl_coeff=0.3)  
+config = config.resources(num_gpus=0)  
 config = config.rollouts(num_rollout_workers=num_workers)
 config = config.framework(framework="torch")
 config['seed'] = 42
 config["model"]["fcnet_hiddens"] = [256, 256, 256, 32]
 config['train_batch_size'] = 10240
+
 
 # registering the environment to ray
 register_env("finrl", env_creator)
@@ -101,15 +100,12 @@ while ep <= total_episodes:
     start = time.time()
     results.append(trainer.train())
     ep += 1
+    rwd = results[-1]['episode_reward_mean']
     if ep % 5 == 0:
-        rwd = results[-1]['episode_reward_mean']
         print(f'Mean Rwd:{rwd}')   
     print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
-    if ep % 25 == 0:
+    if ep % 100 == 0:
         cwd_checkpoint = f"results/{agent_name}_{date}_{ep}"
         trainer.save(cwd_checkpoint)
         print(f"Checkpoint saved in directory {cwd_checkpoint}")
-        
 print(f'Complete training job took{time.time()-job_time:.2f}s')
-cwd_checkpoint = f"results/{date}_{ppo}_{ep}"
-trainer.save(cwd_checkpoint)

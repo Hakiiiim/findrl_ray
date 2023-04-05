@@ -19,6 +19,8 @@ from ray.tune.registry import register_env
 from gymnasium.wrappers import EnvCompatibility
 from ray.rllib.algorithms.algorithm import Algorithm
 from ray.rllib.agents import ppo
+import os 
+os.environ["OMP_NUM_THREADS"] = "1" 
 
 #Parser for num_workers variable in training jobs## 
 parser = argparse.ArgumentParser(description="num_workers & Episodes ")

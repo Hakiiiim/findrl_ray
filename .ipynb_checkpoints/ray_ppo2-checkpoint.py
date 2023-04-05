@@ -27,11 +27,8 @@ parser.add_argument('--ep',type=int,help='episodes')
 args = parser.parse_args()
 num_workers = args.workers
 ep_total = args.ep
-                    
-print('args loaded',num_workers)
-
+print(f'Workers:{num_workers} Episodes To Train:{ep_total}')
 #from finrl.meta.data_processor import DataProcessor
-
 # load the DataFrame from a pickle file, point to home of clutser container. 
 train = pd.read_csv('dataset/train_data.csv')
 train = train.set_index(train.columns[0])
@@ -56,7 +53,7 @@ def env_creator(env_config):
     stock_dim = env_config.get('stock_dim', stock_dimension)
     tech_indicator_list = env_config.get('tech_indicator_list', INDICATORS)
     action_space = env_config.get('action_space', stock_dimension)
-    reward_scaling = env_config.get('reward_scaling', 1e-3)
+    reward_scaling = env_config.get('reward_scaling', 1e-1)
     return EnvCompatibility(StockTradingEnv(
         df=df,
         hmax=hmax,
@@ -72,27 +69,22 @@ def env_creator(env_config):
     ))
 
 config = ppo.PPOConfig()  
-config = config.training(gamma=0.9, lr=0.00025, kl_coeff=0.3)  
+config = config.training(gamma=0.9, lr=0.005, kl_coeff=0.3)  
 config = config.resources(num_gpus=0)  
 config = config.rollouts(num_rollout_workers=num_workers)
 config = config.framework(framework="torch")
 config['seed'] = 42
-config["model"]["fcnet_hiddens"] = [256, 256, 256, 32]
-config['train_batch_size'] = 10240
-
+config["model"]["fcnet_hiddens"] = [256, 256, 256]
+config['train_batch_size'] = 10000
 # registering the environment to ray
 register_env("finrl", env_creator)
-#trainer = ppo.PPOTrainer(env='finrl', config=config)
 trainer = config.build(env="finrl") 
-    
-# Train away -------------------------------------------------------------
 total_episodes = ep_total 
 agent_name = 'ppo'
 ep = 0
 results = []
 job_time = time.time()
 date = datetime.now().strftime('%y%m%d')
-
 while ep <= total_episodes:
     start = time.time()
     results.append(trainer.train())
@@ -101,15 +93,15 @@ while ep <= total_episodes:
     if ep % 5 == 0:
         print(f'Mean Rwd:{rwd}')   
     print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
-    if ep % 100 == 0:
-        cwd_checkpoint = f"results/{agent_name}_{date}_{ep}"
+    if ep % 25 == 0:
+        cwd_checkpoint = f"results/{date}_{ep}"
         trainer.save(cwd_checkpoint)
         zip_filename = f'ckpt_org{date}_{ep}.zip'
         savefile = ftpsavemodel(cwd_checkpoint,zip_filename)
         print(f"Checkpoint saved in directory {cwd_checkpoint},ftp{savefile}in{zip_filename}")
-        
 print(f'Complete training job took{time.time()-job_time:.2f}s')
 #Save latest ckpt point
+cwd_checkpoint = f"results/org_{date}_{ep}"
 trainer.save(cwd_checkpoint)
 #Extract model weights 
 model_weights = trainer.get_policy().get_weights()
@@ -121,10 +113,9 @@ config2 = config2.training(gamma=0.9, lr=0.001, kl_coeff=0.3)
 config2 = config2.rollouts(num_rollout_workers=0) 
 config2 = config2.framework(framework="torch")
 config2['seed'] = 42
-config2["model"]["fcnet_hiddens"] = [256, 256, 128,16]
-config2['sgd_minibatch_size'] = 128
-config2['num_sgd_iter'] = 30
-config2['rollout_fragment_length'] = 1000
+onfig["model"]["fcnet_hiddens"] = [256, 256, 256]
+#config2['sgd_minibatch_size'] = 128
+#config2['num_sgd_iter'] = 30
 config2['train_batch_size'] = 10000
 trainer2 = ppo.PPOTrainer(env='finrl', config=config2)
 trainer2.get_policy().set_weights(model_weights)

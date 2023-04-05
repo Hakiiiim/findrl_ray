@@ -100,7 +100,7 @@ while ep <= total_episodes:
         trainer.save(cwd_checkpoint)
         zip_filename = f'ckpt_org{date}_{ep}.zip'
         savefile = ftpsavemodel(cwd_checkpoint,zip_filename)
-        print(f"Checkpoint saved in directory {cwd_checkpoint},ftp{savefile}in{zip_filename}")
+        print(f'Checkpoint saved in directory {cwd_checkpoint},ftp{savefile}in{zip_filename}')
 print(f'Complete training job took{time.time()-job_time:.2f}s')
 #Save latest ckpt point
 cwd_checkpoint = f"results/org_{date}_{ep}"

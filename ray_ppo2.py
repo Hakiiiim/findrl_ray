@@ -53,7 +53,7 @@ def env_creator(env_config):
     stock_dim = env_config.get('stock_dim', stock_dimension)
     tech_indicator_list = env_config.get('tech_indicator_list', INDICATORS)
     action_space = env_config.get('action_space', stock_dimension)
-    reward_scaling = env_config.get('reward_scaling', 1e-1)
+    reward_scaling = env_config.get('reward_scaling', 1e-2)
     return EnvCompatibility(StockTradingEnv(
         df=df,
         hmax=hmax,
@@ -109,11 +109,11 @@ print('passed model weights')
 config2 = ppo.PPOConfig()
 print('config created')
 config2 = config2.environment(env_config={'hmax':500,'initial_amount':1000000})
-config2 = config2.training(gamma=0.9, lr=0.001, kl_coeff=0.3)  
+config2 = config2.training(gamma=0.9, lr=0.005, kl_coeff=0.3)  
 config2 = config2.rollouts(num_rollout_workers=0) 
 config2 = config2.framework(framework="torch")
 config2['seed'] = 42
-onfig["model"]["fcnet_hiddens"] = [256, 256, 256]
+config2["model"]["fcnet_hiddens"] = [256, 256, 256]
 #config2['sgd_minibatch_size'] = 128
 #config2['num_sgd_iter'] = 30
 config2['train_batch_size'] = 10000
@@ -122,6 +122,6 @@ trainer2.get_policy().set_weights(model_weights)
 print('New Weights loaded. ')
 ckpt2 = f"{cwd_checkpoint}_wt"
 trainer2.save(ckpt2)
-zip_filename = f'ckpt_wt{date}_{ep}'
+zip_filename = f'ckpt_wt{date}_{ep}.zip'
 savefile = ftpsavemodel(ckpt2,zip_filename)
 print(f'file{savefile}in{ckpt2}')

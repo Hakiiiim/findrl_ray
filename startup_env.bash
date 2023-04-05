@@ -20,8 +20,8 @@ pip install git+https://github.com/AI4Finance-Foundation/FinRL.git
 # install gymnasium
 pip install gymnasium stockstats dm_tree scikit-image tqdm boto3
 
-#export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
+pip install tensorflow-gpu
 pip install numpy==1.21

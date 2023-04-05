@@ -10,26 +10,23 @@ sys.path.append("./FinRL")
 import finrl
 from finenv.env_stocktrading import StockTradingEnv
 from finenv.preprocessors import data_split
-
+from finenv.save_model import ftpsavemodel
 import argparse
-
 import psutil
 import ray
 ray._private.utils.get_system_memory = lambda: psutil.virtual_memory().total
 from ray.tune.registry import register_env
 from gymnasium.wrappers import EnvCompatibility
-
+from ray.rllib.algorithms.algorithm import Algorithm
 from ray.rllib.agents import ppo
 
 #Parser for num_workers variable in training jobs## 
 parser = argparse.ArgumentParser(description="num_workers & Episodes ")
 parser.add_argument('--workers',type=int,help='num_workers')
 parser.add_argument('--ep',type=int,help='episodes')
-parser.add_argument('--gpus',type=int,help='num_gpus')
 args = parser.parse_args()
 num_workers = args.workers
 ep_total = args.ep
-gpus = args.gpus
                     
 print('args loaded',num_workers)
 
@@ -73,11 +70,10 @@ def env_creator(env_config):
         action_space=action_space,
         reward_scaling=reward_scaling
     ))
-ray.shutdown()
-print(f"ray is being initialized")
+
 config = ppo.PPOConfig()  
-config = config.training(gamma=0.9, lr=0.0025, kl_coeff=0.3)  
-config = config.resources(num_gpus=gpus)  
+config = config.training(gamma=0.9, lr=0.00025, kl_coeff=0.3)  
+config = config.resources(num_gpus=0)  
 config = config.rollouts(num_rollout_workers=num_workers)
 config = config.framework(framework="torch")
 config['seed'] = 42
@@ -105,11 +101,36 @@ while ep <= total_episodes:
     if ep % 5 == 0:
         print(f'Mean Rwd:{rwd}')   
     print(f'Current episode{ep} \nTime/Its:{time.time()-start:.2f}s')
-    if ep % 25 == 0:
+    if ep % 100 == 0:
         cwd_checkpoint = f"results/{agent_name}_{date}_{ep}"
         trainer.save(cwd_checkpoint)
-        print(f"Checkpoint saved in directory {cwd_checkpoint}")
+        zip_filename = f'ckpt_org{date}_{ep}.zip'
+        savefile = ftpsavemodel(cwd_checkpoint,zip_filename)
+        print(f"Checkpoint saved in directory {cwd_checkpoint},ftp{savefile}in{zip_filename}")
         
 print(f'Complete training job took{time.time()-job_time:.2f}s')
-cwd_checkpoint = f"results/{date}_{ppo}_{ep}"
+#Save latest ckpt point
 trainer.save(cwd_checkpoint)
+#Extract model weights 
+model_weights = trainer.get_policy().get_weights()
+print('passed model weights')
+config2 = ppo.PPOConfig()
+print('config created')
+config2 = config2.environment(env_config={'hmax':500,'initial_amount':1000000})
+config2 = config2.training(gamma=0.9, lr=0.001, kl_coeff=0.3)  
+config2 = config2.rollouts(num_rollout_workers=0) 
+config2 = config2.framework(framework="torch")
+config2['seed'] = 42
+config2["model"]["fcnet_hiddens"] = [256, 256, 128,16]
+config2['sgd_minibatch_size'] = 128
+config2['num_sgd_iter'] = 30
+config2['rollout_fragment_length'] = 1000
+config2['train_batch_size'] = 10000
+trainer2 = ppo.PPOTrainer(env='finrl', config=config2)
+trainer2.get_policy().set_weights(model_weights)
+print('New Weights loaded. ')
+ckpt2 = f"{cwd_checkpoint}_wt"
+trainer2.save(ckpt2)
+zip_filename = f'ckpt_wt{date}_{ep}'
+savefile = ftpsavemodel(ckpt2,zip_filename)
+print(f'file{savefile}in{ckpt2}')

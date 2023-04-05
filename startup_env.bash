@@ -25,3 +25,5 @@ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 pip install tensorflow
 pip install numpy==1.21
+
+pip install protobuf==3.20 grpcio==1.49

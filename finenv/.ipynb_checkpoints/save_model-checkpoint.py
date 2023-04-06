@@ -11,11 +11,11 @@ def ftpsavemodel(lcdir, filename):
     zip_filename = filename
     # Create the zip file
     zip_file = zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED)
+    print('zip_file created.')
     for root, dirs, files in os.walk(local_dir):
         for file in files:
             zip_file.write(os.path.join(root, file))
     zip_file.close()
-
     # Open the zip file and send it over FTP
     with open(zip_filename, 'rb') as f:
         ftp.storbinary('STOR ' + zip_filename, f)
@@ -24,3 +24,21 @@ def ftpsavemodel(lcdir, filename):
     # Delete the local zip file
     os.remove(zip_filename)
     return 'saved'
+def zipfile(lcdir,filename):
+    local_dir = lcdir
+    zip_filename = filename
+    # Create the zip file
+    zip_file = zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED)
+    print('zip_file created.')
+    for root, dirs, files in os.walk(local_dir):
+        for file in files:
+            zip_file.write(os.path.join(root, file))
+    zip_file.close()
+    return f'file zipped at {zip_filename}'
+def sendfile(filename):
+    zip_filename = filename
+    with open(zip_filename, 'rb') as f:ftp.storbinary('STOR ' + zip_filename, f)
+    # Close the FTP connection
+    f.close()
+    ftp.quit()
+    return f'{zip_filename} sent'

@@ -24,7 +24,7 @@ def ftpsavemodel(lcdir, filename):
     # Delete the local zip file
     os.remove(zip_filename)
     return 'saved'
-def zipfile(lcdir,filename):
+def zipfilem(lcdir,filename):
     local_dir = lcdir
     zip_filename = filename
     # Create the zip file

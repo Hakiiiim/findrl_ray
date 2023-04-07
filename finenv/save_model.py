@@ -34,11 +34,10 @@ def zipfilem(lcdir,filename):
         for file in files:
             zip_file.write(os.path.join(root, file))
     zip_file.close()
-    return f'file zipped at {zip_filename}'
+    return zip_filename
 def sendfile(filename):
-    zip_filename = filename
-    with open(zip_filename, 'rb') as f:ftp.storbinary('STOR ' + zip_filename, f)
+    with open(filename, 'rb') as f:ftp.storbinary('STOR ' + filename, f)
     # Close the FTP connection
     f.close()
     ftp.quit()
-    return f'{zip_filename} sent'
+    return f'{filename} sent'

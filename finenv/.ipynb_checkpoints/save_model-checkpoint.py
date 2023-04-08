@@ -2,9 +2,6 @@ import os
 import zipfile
 from ftplib import FTP
 # Set up the FTP connection
-ftp = FTP('storage1700.is.cc')
-ftp.login(user='trainer@st31327.ispot.cc', passwd='ga42918828')
-
 def ftpsavemodel(lcdir, filename):
 # Set up the local directory and the name of the zip file
     local_dir = lcdir
@@ -36,8 +33,12 @@ def zipfilem(lcdir,filename):
     zip_file.close()
     return zip_filename
 def sendfile(filename):
-    with open(filename, 'rb') as f:ftp.storbinary('STOR ' + filename, f)
+    ftp = FTP('storage1700.is.cc')
+    ftp.login(user='trainer@st31327.ispot.cc', passwd='ga42918828')
+    filename = filename
+    with open(filename, 'rb') as b:
+        ftp.storbinary('STOR ' + filename, b)
     # Close the FTP connection
-    f.close()
+    b.close()
     ftp.quit()
     return f'{filename} sent'

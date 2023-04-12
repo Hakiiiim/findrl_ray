@@ -3,6 +3,8 @@ import zipfile
 from ftplib import FTP
 # Set up the FTP connection
 def ftpsavemodel(lcdir, filename):
+    ftp = FTP('storage1700.is.cc')
+    ftp.login(user='trainer@st31327.ispot.cc', passwd='ga42918828')
 # Set up the local directory and the name of the zip file
     local_dir = lcdir
     zip_filename = filename

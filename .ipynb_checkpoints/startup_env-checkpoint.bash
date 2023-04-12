@@ -18,10 +18,9 @@ pip install git+https://github.com/AI4Finance-Foundation/FinRL.git
 # install necessary dependencies
 
 # install gymnasium
-pip install gymnasium stockstats dm_tree scikit-image tqdm boto3
+pip install gymnasium stockstats dm_tree scikit-image tqdm yfinance
 
-
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 #pip install tensorflow
 pip install numpy==1.21
 pip install protobuf==3.20

@@ -10,7 +10,7 @@ import pyfolio
 from pyfolio import timeseries
 
 from finrl import config
-from yahoodownloader import YahooDownloader
+from finenv.yahoodownloader import YahooDownloader
 
 
 def get_daily_return(df, value_col_name="account_value"):
